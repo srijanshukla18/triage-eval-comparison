@@ -1,0 +1,42 @@
+{
+  "name": "triage-eval-comparison",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Apples-to-apples LLM support triage eval comparison for Braintrust, LangSmith, and Langfuse.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "smoke:agent": "tsx scripts/smoke-agent.ts",
+    "smoke:openrouter": "tsx scripts/smoke-openrouter.ts",
+    "eval:braintrust": "bt eval --runner tsx src/platforms/braintrust.eval.ts --no-input",
+    "eval:langsmith": "tsx src/platforms/langsmith.eval.ts",
+    "eval:langfuse": "tsx src/platforms/langfuse.eval.ts",
+    "eval:all": "pnpm eval:braintrust && pnpm eval:langsmith && pnpm eval:langfuse",
+    "doctor": "tsx scripts/doctor.ts"
+  },
+  "dependencies": {
+    "@braintrust/otel": "^0.2.0",
+    "@langchain/core": "^1.1.48",
+    "@langchain/langgraph": "^1.3.4",
+    "@langchain/openrouter": "^0.3.0",
+    "@langfuse/client": "^5.4.1",
+    "@langfuse/langchain": "^5.4.1",
+    "@langfuse/otel": "^5.4.1",
+    "@langfuse/tracing": "^5.4.1",
+    "@opentelemetry/sdk-node": "^0.208.0",
+    "autoevals": "^0.0.132",
+    "braintrust": "^3.15.0",
+    "langsmith": "^0.7.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
