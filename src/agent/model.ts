@@ -36,6 +36,16 @@ function messageContentToString(message: unknown): string {
   return String(content ?? "");
 }
 
+function parseJsonObject(raw: string): unknown {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+  const candidate = fenced ?? trimmed.slice(trimmed.indexOf("{"), trimmed.lastIndexOf("}") + 1);
+  if (!candidate || !candidate.startsWith("{")) {
+    throw new Error(`Expected JSON object response, got: ${trimmed.slice(0, 200)}`);
+  }
+  return JSON.parse(candidate);
+}
+
 export function extractOrderId(input: string): string | undefined {
   return input.match(/\b[A-Z]\d{4}\b/i)?.[0]?.toUpperCase();
 }
@@ -65,19 +75,31 @@ export class OpenRouterAgentModel implements AgentModel {
   }
 
   async classify(args: Parameters<AgentModel["classify"]>[0]) {
-    const structured = this.model.withStructuredOutput(classificationSchema, {
-      name: "classify_ticket"
-    });
-    const result = await structured.invoke(
+    const response = await this.model.invoke(
       [
-        { role: "system", content: args.systemPrompt },
+        {
+          role: "system",
+          content: `${args.systemPrompt}\n\nReturn only valid JSON. Do not use markdown.`
+        },
         {
           role: "user",
-          content: `Classify this support ticket into exactly one fixed category. Extract the order id only if present.\n\nTicket:\n${args.input}`
+          content: `Classify this support ticket into exactly one fixed category. Extract the order id only if present.
+
+Allowed categories:
+${CATEGORIES.join(", ")}
+
+JSON shape:
+{"category":"order_status","orderId":"A1001"}
+
+Use null for orderId when absent.
+
+Ticket:
+${args.input}`
         }
       ],
       { callbacks: args.callbacks as never }
     );
+    const result = classificationSchema.parse(parseJsonObject(messageContentToString(response)));
     return {
       category: result.category,
       ...optionalOrderId(result.orderId ?? extractOrderId(args.input))
@@ -85,15 +107,12 @@ export class OpenRouterAgentModel implements AgentModel {
   }
 
   async shouldLookupShipping(args: Parameters<AgentModel["shouldLookupShipping"]>[0]) {
-    const structured = this.model.withStructuredOutput(shippingDecisionSchema, {
-      name: "shipping_lookup_decision"
-    });
-    const result = await structured.invoke(
+    const response = await this.model.invoke(
       [
         {
           role: "system",
           content:
-            "Decide whether the support agent must call lookup_shipping before answering. Return true only when the order is shipped or shipped_ambiguous and the ticket needs carrier details, delay evidence, or ETA clarification."
+            'Decide whether the support agent must call lookup_shipping before answering. Return only valid JSON like {"shouldLookupShipping":true,"reason":"needs carrier delay evidence"}. Return true only when the order is shipped or shipped_ambiguous and the ticket needs carrier details, delay evidence, or ETA clarification.'
         },
         {
           role: "user",
@@ -106,6 +125,7 @@ export class OpenRouterAgentModel implements AgentModel {
       ],
       { callbacks: args.callbacks as never }
     );
+    const result = shippingDecisionSchema.parse(parseJsonObject(messageContentToString(response)));
     return result.shouldLookupShipping;
   }
 

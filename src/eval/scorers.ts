@@ -24,9 +24,11 @@ const judgeSchema = z.object({
 });
 
 export function parseJudgeResponse(raw: unknown): JudgeScore {
+  const rawString = typeof raw === "string" ? raw.trim() : null;
+  const fenced = rawString?.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
   const candidate =
     typeof raw === "string"
-      ? JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1))
+      ? JSON.parse(fenced ?? raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1))
       : raw;
   const parsed = judgeSchema.parse(candidate);
   return {
@@ -52,18 +54,15 @@ export class OpenRouterJudgeModel implements JudgeModel {
   }
 
   async judge(prompt: string): Promise<JudgeScore> {
-    const structured = this.model.withStructuredOutput(judgeSchema, {
-      name: "judge_score"
-    });
-    const result = await structured.invoke([
+    const result = await this.model.invoke([
       {
         role: "system",
         content:
-          "You are an exacting evaluator. Return a score from 0 to 1 and a short comment. Penalize unsupported policy claims and invented facts."
+          'You are an exacting evaluator. Return only valid JSON. Do not use markdown. Shape: {"score":0.75,"comment":"short reason"}. Penalize unsupported policy claims and invented facts.'
       },
       { role: "user", content: prompt }
     ]);
-    return parseJudgeResponse(result);
+    return parseJudgeResponse((result as { content?: unknown }).content);
   }
 }
 
