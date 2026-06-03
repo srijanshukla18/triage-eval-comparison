@@ -85,17 +85,19 @@ Date observed: 2026-06-03
 
 These findings come from hands-on hosted runs in Braintrust, LangSmith, and Langfuse using this repo's shared triage eval.
 
-If this repo can keep only one observability/eval product, use LangSmith. It showed the most useful end-to-end view for a LangGraph app: agent runs, model calls, evaluator runs, dataset experiments, latency, error rates, and monitoring dashboards.
+For the current LangGraph implementation, if this repo can keep only one observability/eval product, use LangSmith. It showed the most useful end-to-end view for this app: agent runs, model calls, evaluator runs, dataset experiments, latency, error rates, and monitoring dashboards.
 
-Use Braintrust as the eval leaderboard and CI-gating product. It has the cleanest experiment comparison mental model, but the current integration did not send usable logs/traces, so review and monitoring were mostly empty.
+Use Braintrust as the eval leaderboard and CI-gating product. It has the cleanest experiment comparison mental model, but the current integration did not send usable logs/traces, so Braintrust observability is not fairly measured yet.
 
 Use Langfuse when the priority is broad vendor-neutral observability, score analytics, and production trace investigation. It is strong, especially for traces and score analysis, but the experiment comparison flow is less direct than Braintrust or LangSmith.
 
-Overall ranking for this repo:
+Provisional ranking for this LangGraph repo:
 
 1. LangSmith
 2. Braintrust
 3. Langfuse
+
+This ranking is about the observed hosted integration for this repo, not a universal product ranking. Braintrust is ranked on the eval surfaces that worked; its tracing, review, and monitoring surfaces are marked not measured because traces did not land.
 
 Recommended split:
 
@@ -111,15 +113,15 @@ Recommended split:
 | Dimension | Winner | Ranking |
 | --- | --- | --- |
 | Onboarding for this repo | LangSmith | LangSmith > Braintrust > Langfuse |
-| LangGraph debugging | LangSmith | LangSmith > Langfuse > Braintrust |
+| LangGraph debugging | LangSmith | LangSmith > Langfuse; Braintrust not measured because traces did not land |
 | Experiment comparison | Braintrust | Braintrust > LangSmith > Langfuse |
 | Dataset eval table | LangSmith | LangSmith > Langfuse > Braintrust |
 | Score analytics | Langfuse | Langfuse > Braintrust > LangSmith |
-| Tracing and spans | LangSmith | LangSmith > Langfuse > Braintrust |
-| Production monitoring | LangSmith | LangSmith > Langfuse > Braintrust |
+| Tracing and spans | LangSmith | LangSmith > Langfuse; Braintrust not measured because traces did not land |
+| Production monitoring | LangSmith | LangSmith > Langfuse; Braintrust not measured because logs/traces did not land |
 | Prompt management | Langfuse | Langfuse > Braintrust > LangSmith |
 | Scorer/evaluator authoring | LangSmith | LangSmith > Braintrust > Langfuse |
-| Human review/annotation | Braintrust | Braintrust > Langfuse > LangSmith |
+| Human review/annotation | Not measured | Braintrust review was gated by missing logs; Langfuse and LangSmith surfaces were observed but not compared deeply |
 | CI/eval gating | Braintrust | Braintrust > LangSmith > Langfuse |
 | UI clarity for this eval | LangSmith | LangSmith > Braintrust > Langfuse |
 | Beginner friendliness | LangSmith | LangSmith > Langfuse > Braintrust |
@@ -139,6 +141,13 @@ Langfuse onboarding was less represented in the captured first-run flow. The UI 
 
 Onboarding verdict: LangSmith was best for this repo because it moved from setup to visible traces quickly and had a clear success state. Braintrust was powerful but surprising. Langfuse became clear after data landed, but the first-run path was not as directly captured.
 
+### Methodology Caveats
+
+- Braintrust observability is not measured yet. Its eval, experiment, scorer, and CI-gating surfaces worked; its logs, review, and monitor pages were empty because this repo did not successfully send Braintrust traces.
+- LangSmith's win is conditional on this repo using LangGraph. LangSmith has a native advantage for LangChain/LangGraph traces; a non-LangGraph agent loop could narrow that advantage.
+- The LangSmith project showed a 22% trace error rate during the hosted run. Before treating its monitoring results as fully healthy, those failed traces should be root-caused.
+- Cross-platform fairness depends on identical dataset identity, prompt-version metadata, and run labels across adapters. The current adapters are close enough for an exploratory comparison, but this should be tightened before treating the comparison as publication-grade.
+
 ### Braintrust
 
 Strengths:
@@ -157,7 +166,7 @@ Weaknesses:
 - Review was not usable because it requires logs.
 - Monitor had no logs monitoring data.
 - The experiment detail page said rows were not attached to a dataset, even though the eval inputs are fixed in the repo.
-- It is currently the weakest end-to-end debugging surface for this repo because evals worked but traces/logs did not.
+- Its end-to-end debugging surface is not measured for this repo yet because evals worked but traces/logs did not.
 
 Observed screens:
 
@@ -232,10 +241,10 @@ Observed screens:
 
 ### Follow-Up Work
 
-- Wire Braintrust tracing/logging properly if Braintrust should be judged as an end-to-end observability product instead of only an eval product.
-- Investigate the LangSmith project with 22% trace error rate.
+- Wire Braintrust tracing/logging properly before judging Braintrust as an end-to-end observability product.
+- Root-cause the LangSmith project with 22% trace error rate.
 - Use the same V1/V2 prompt naming across all three tools so UI comparison is less polluted by adapter-specific labels.
-- Consider updating the adapters so every platform stores the same dataset identity and prompt-version metadata.
+- Update the adapters so every platform stores the same dataset identity and prompt-version metadata.
 
 ## Docs Used
 
