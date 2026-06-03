@@ -60,8 +60,8 @@ function makeEval(promptVersion: PromptVersion, systemPrompt: string) {
     metadata: {
       promptVersion,
       datasetHash: datasetHash(),
-      triageModel: process.env.TRIAGE_MODEL ?? "minimax/minimax-m3",
-      judgeModel: process.env.JUDGE_MODEL ?? "deepseek/deepseek-v4-pro"
+      triageModel: process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free",
+      judgeModel: process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"
     },
     maxConcurrency: 3,
     timeout: 20 * 60 * 1000

@@ -64,7 +64,7 @@ export function needsOrderLookup(category: Category): boolean {
 export class OpenRouterAgentModel implements AgentModel {
   private readonly model: ChatOpenRouter;
 
-  constructor(modelName = process.env.TRIAGE_MODEL ?? "minimax/minimax-m3") {
+  constructor(modelName = process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free") {
     this.model = new ChatOpenRouter({
       model: modelName,
       temperature: 0,

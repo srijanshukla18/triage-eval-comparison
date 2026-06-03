@@ -31,8 +31,8 @@ Set the environment variables in your shell or source your `.env` through your p
 Defaults:
 
 ```bash
-export TRIAGE_MODEL=minimax/minimax-m3
-export JUDGE_MODEL=deepseek/deepseek-v4-pro
+export TRIAGE_MODEL=openai/gpt-oss-120b:free
+export JUDGE_MODEL=openai/gpt-oss-120b:free
 ```
 
 ## Credentials

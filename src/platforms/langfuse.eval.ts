@@ -154,8 +154,8 @@ async function runPromptVersion(promptVersion: "v1" | "v2", fallbackPrompt: stri
       promptVersion,
       promptVersionNumber: prompt.version,
       datasetHash: datasetHash(),
-      triageModel: process.env.TRIAGE_MODEL ?? "minimax/minimax-m3",
-      judgeModel: process.env.JUDGE_MODEL ?? "deepseek/deepseek-v4-pro"
+      triageModel: process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free",
+      judgeModel: process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"
     },
     maxConcurrency: 3,
     task: async ({ input, metadata }) => {

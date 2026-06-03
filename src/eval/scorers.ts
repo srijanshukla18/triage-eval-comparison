@@ -40,7 +40,7 @@ export function parseJudgeResponse(raw: unknown): JudgeScore {
 export class OpenRouterJudgeModel implements JudgeModel {
   private readonly model: ChatOpenRouter;
 
-  constructor(modelName = process.env.JUDGE_MODEL ?? "deepseek/deepseek-v4-pro") {
+  constructor(modelName = process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free") {
     if (!process.env.OPENROUTER_API_KEY) {
       throw new Error("OPENROUTER_API_KEY is required for LLM-as-judge scorers.");
     }

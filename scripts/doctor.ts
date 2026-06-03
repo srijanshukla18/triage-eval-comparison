@@ -12,8 +12,8 @@ const required = [
 console.log("triage-eval-comparison doctor");
 console.log(`dataset=${DATASET_NAME}`);
 console.log(`datasetHash=${datasetHash()}`);
-console.log(`TRIAGE_MODEL=${process.env.TRIAGE_MODEL ?? "minimax/minimax-m3"}`);
-console.log(`JUDGE_MODEL=${process.env.JUDGE_MODEL ?? "deepseek/deepseek-v4-pro"}`);
+console.log(`TRIAGE_MODEL=${process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free"}`);
+console.log(`JUDGE_MODEL=${process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"}`);
 
 for (const name of required) {
   console.log(`${name}=${process.env[name] ? "set" : "missing"}`);
