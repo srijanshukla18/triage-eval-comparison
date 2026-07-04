@@ -26,9 +26,12 @@ describe("neutral scorers", () => {
     expect(categoryMatch(ticket, { ...matchingOutput, category: "refund_request" }).score).toBe(0);
   });
 
-  it("scores required tool presence", () => {
+  it("scores the full expected tool sequence", () => {
     expect(toolCorrect(ticket, matchingOutput).score).toBe(1);
     expect(toolCorrect(ticket, { ...matchingOutput, toolCalls: [] }).score).toBe(0);
+    expect(
+      toolCorrect(ticket, { ...matchingOutput, toolCalls: matchingOutput.toolCalls.slice(0, 1) }).score
+    ).toBe(0);
   });
 
   it("parses judge JSON despite surrounding text", () => {

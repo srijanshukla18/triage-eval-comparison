@@ -13,7 +13,7 @@ console.log("triage-eval-comparison doctor");
 console.log(`dataset=${DATASET_NAME}`);
 console.log(`datasetHash=${datasetHash()}`);
 console.log(`TRIAGE_MODEL=${process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free"}`);
-console.log(`JUDGE_MODEL=${process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"}`);
+console.log(`JUDGE_MODEL=${process.env.JUDGE_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free"}`);
 
 for (const name of required) {
   console.log(`${name}=${process.env[name] ? "set" : "missing"}`);

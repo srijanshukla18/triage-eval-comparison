@@ -40,29 +40,45 @@ export function parseJudgeResponse(raw: unknown): JudgeScore {
 export class OpenRouterJudgeModel implements JudgeModel {
   private readonly model: ChatOpenRouter;
 
-  constructor(modelName = process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free") {
+  constructor(modelName = process.env.JUDGE_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free") {
     if (!process.env.OPENROUTER_API_KEY) {
       throw new Error("OPENROUTER_API_KEY is required for LLM-as-judge scorers.");
     }
     this.model = new ChatOpenRouter({
       model: modelName,
       temperature: 0,
-      maxTokens: 500,
+      // Reasoning models spend completion tokens on reasoning before emitting
+      // the JSON verdict; a tight cap truncates the verdict to empty content.
+      maxTokens: 2000,
       siteUrl: process.env.OPENROUTER_SITE_URL ?? "https://github.com/srijanshukla18/triage-eval-comparison",
       siteName: process.env.OPENROUTER_APP_TITLE ?? "triage-eval-comparison"
     });
   }
 
   async judge(prompt: string): Promise<JudgeScore> {
-    const result = await this.model.invoke([
-      {
-        role: "system",
-        content:
-          'You are an exacting evaluator. Return only valid JSON. Do not use markdown. Shape: {"score":0.75,"comment":"short reason"}. Penalize unsupported policy claims and invented facts.'
-      },
-      { role: "user", content: prompt }
-    ]);
-    return parseJudgeResponse((result as { content?: unknown }).content);
+    // Free OpenRouter endpoints intermittently 504 or return truncated bodies;
+    // without retries one transient failure voids an entire eval row.
+    const maxAttempts = 3;
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const result = await this.model.invoke([
+          {
+            role: "system",
+            content:
+              'You are an exacting evaluator. Return only valid JSON. Do not use markdown. Shape: {"score":0.75,"comment":"short reason"}. Penalize unsupported policy claims and invented facts.'
+          },
+          { role: "user", content: prompt }
+        ]);
+        return parseJudgeResponse((result as { content?: unknown }).content);
+      } catch (error) {
+        lastError = error;
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 5000));
+        }
+      }
+    }
+    throw lastError;
   }
 }
 
@@ -75,11 +91,12 @@ export function categoryMatch(ticket: Ticket, result: AgentResult): ScoreResult 
 }
 
 export function toolCorrect(ticket: Ticket, result: AgentResult): ScoreResult {
-  const firstTool = result.toolCalls[0]?.name ?? null;
+  const expected = ticket.expected_tools.join(" -> ") || "none";
+  const actual = result.toolCalls.map((call) => call.name).join(" -> ") || "none";
   return {
     name: "toolCorrect",
-    score: firstTool === ticket.expected_tool ? 1 : 0,
-    comment: `expected=${ticket.expected_tool ?? "none"}; actual=${firstTool ?? "none"}`
+    score: expected === actual ? 1 : 0,
+    comment: `expected=${expected}; actual=${actual}`
   };
 }
 

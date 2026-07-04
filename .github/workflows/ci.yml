@@ -53,4 +53,4 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           BRAINTRUST_API_KEY: ${{ secrets.BRAINTRUST_API_KEY }}
           TRIAGE_MODEL: openai/gpt-oss-120b:free
-          JUDGE_MODEL: openai/gpt-oss-120b:free
+          JUDGE_MODEL: nvidia/nemotron-3-ultra-550b-a55b:free

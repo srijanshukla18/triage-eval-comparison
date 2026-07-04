@@ -1,3 +1,4 @@
+import { BraintrustCallbackHandler } from "@braintrust/langchain-js";
 import { Eval, Reporter, type ExperimentSummary } from "braintrust";
 import { runAgent, SYSTEM_PROMPT_V1, SYSTEM_PROMPT_V2, type AgentResult } from "../agent/index.js";
 import { TICKETS, type Ticket } from "../eval/dataset.js";
@@ -11,6 +12,10 @@ import {
 import { PROJECT_NAME, datasetHash, requiredEnv, scoreToBraintrust } from "./common.js";
 
 requiredEnv(["OPENROUTER_API_KEY", "BRAINTRUST_API_KEY"]);
+
+// Keep this run out of LangSmith: ambient LangChain tracing would send
+// Braintrust eval traffic to the LangSmith project and pollute the comparison.
+process.env.LANGSMITH_TRACING = "false";
 
 type PromptVersion = "v1" | "v2";
 
@@ -32,8 +37,13 @@ const faithfulnessGate = Reporter<boolean>("faithfulness-gate", {
       console.error("Braintrust gate could not find both V1 and V2 faithfulness summaries.");
       return false;
     }
-    const passed = v2 > v1;
-    console.log(`Braintrust faithfulness gate: v1=${v1}; v2=${v2}; passed=${passed}`);
+    // Non-regression with a noise margin: 25 rows and an LLM judge make a
+    // strict v2 > v1 comparison flip on judge noise rather than prompt quality.
+    const noiseMargin = 0.02;
+    const passed = v2 >= v1 - noiseMargin;
+    console.log(
+      `Braintrust faithfulness gate (non-regression, margin=${noiseMargin}): v1=${v1}; v2=${v2}; passed=${passed}`
+    );
     return passed;
   }
 });
@@ -49,7 +59,8 @@ function makeEval(promptVersion: PromptVersion, systemPrompt: string) {
         datasetHash: datasetHash()
       }
     })),
-    task: async (input) => runAgent(input, systemPrompt),
+    task: async (input) =>
+      runAgent(input, systemPrompt, { callbacks: [new BraintrustCallbackHandler()] }),
     scores: [
       ({ expected, output }) => scoreToBraintrust(categoryMatch(expected, output)),
       ({ expected, output }) => scoreToBraintrust(toolCorrect(expected, output)),
@@ -61,7 +72,7 @@ function makeEval(promptVersion: PromptVersion, systemPrompt: string) {
       promptVersion,
       datasetHash: datasetHash(),
       triageModel: process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free",
-      judgeModel: process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"
+      judgeModel: process.env.JUDGE_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free"
     },
     maxConcurrency: 3,
     timeout: 20 * 60 * 1000

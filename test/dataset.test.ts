@@ -15,6 +15,17 @@ describe("eval dataset", () => {
     }
   });
 
+  it("expects the model-decided shipping lookup as a sequence where carrier evidence is needed", () => {
+    const ambiguous = TICKETS.find((ticket) => ticket.id === "ambiguous-shipped-late");
+    expect(ambiguous?.expected_tools).toEqual(["lookup_order", "lookup_shipping"]);
+
+    for (const ticket of TICKETS) {
+      if (ticket.expected_tools.includes("lookup_shipping")) {
+        expect(ticket.expected_tools[0]).toBe("lookup_order");
+      }
+    }
+  });
+
   it("includes required adversarial cases", () => {
     const ids = new Set(TICKETS.map((ticket) => ticket.id));
     expect(ids.has("missing-order-id")).toBe(true);

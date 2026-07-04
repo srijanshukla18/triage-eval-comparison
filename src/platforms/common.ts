@@ -4,7 +4,7 @@ import type { AgentResult } from "../agent/types.js";
 import type { ScoreResult } from "../eval/scorers.js";
 
 export const PROJECT_NAME = "triage-comparison";
-export const DATASET_NAME = "triage-comparison-v1";
+export const DATASET_NAME = "triage-comparison-v2";
 
 export type EvalInput = {
   id: string;

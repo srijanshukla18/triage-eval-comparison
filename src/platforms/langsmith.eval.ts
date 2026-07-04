@@ -80,7 +80,7 @@ async function runPromptVersion(client: Client, promptVersion: "v1" | "v2", syst
       promptVersion,
       datasetHash: datasetHash(),
       triageModel: process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free",
-      judgeModel: process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"
+      judgeModel: process.env.JUDGE_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free"
     },
     maxConcurrency: 3
   });

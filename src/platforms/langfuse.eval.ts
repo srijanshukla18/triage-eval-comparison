@@ -29,6 +29,10 @@ requiredEnv([
   "LANGFUSE_BASE_URL"
 ]);
 
+// Keep this run out of LangSmith: ambient LangChain tracing would send
+// Langfuse eval traffic to the LangSmith project and pollute the comparison.
+process.env.LANGSMITH_TRACING = "false";
+
 type LangfuseInput = ReturnType<typeof toEvalInput>;
 
 const otelSdk = new NodeSDK({
@@ -155,7 +159,7 @@ async function runPromptVersion(promptVersion: "v1" | "v2", fallbackPrompt: stri
       promptVersionNumber: prompt.version,
       datasetHash: datasetHash(),
       triageModel: process.env.TRIAGE_MODEL ?? "openai/gpt-oss-120b:free",
-      judgeModel: process.env.JUDGE_MODEL ?? "openai/gpt-oss-120b:free"
+      judgeModel: process.env.JUDGE_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free"
     },
     maxConcurrency: 3,
     task: async ({ input, metadata }) => {

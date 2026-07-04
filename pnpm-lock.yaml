@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@braintrust/otel':
-        specifier: ^0.2.0
-        version: 0.2.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(braintrust@3.15.0(zod@4.4.3))
+      '@braintrust/langchain-js':
+        specifier: ^0.2.4
+        version: 0.2.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(@opentelemetry/exporter-trace-otlp-proto@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(openai@6.41.0(zod@4.4.3)))(braintrust@3.15.0(zod@4.4.3))
       '@langchain/core':
         specifier: ^1.1.48
         version: 1.1.48(@opentelemetry/api@1.9.1)(@opentelemetry/exporter-trace-otlp-proto@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(openai@6.41.0(zod@4.4.3))
@@ -66,14 +66,11 @@ packages:
   '@apm-js-collab/code-transformer@0.12.0':
     resolution: {integrity: sha512-5F2ob4cMYezbaUGAk+YltbDvb9BFIghN92ubct9Ho/0MFx4FkChCxYV99NkU6Kx+RAgaqBV6yxKuWreQ6K8SOw==}
 
-  '@braintrust/otel@0.2.0':
-    resolution: {integrity: sha512-O4xArrvhoxWybIxzMIYrCYvSkUDv+3Fc4CXOKxc8X5eX82X3AFDEdD0lqIWRvNTbX99+Z5/4DbAyxNr4vbQuSQ==}
+  '@braintrust/langchain-js@0.2.4':
+    resolution: {integrity: sha512-KXcqRK6zFEcWlOgVe2Ah5o7YxBmjW91FILqZeYYLXRYnGCQwNhGoqNJF0dk0wQsN6bfBPVGUu20CflGRwHD1rw==}
     peerDependencies:
-      '@opentelemetry/api': '>=1.9.0'
-      '@opentelemetry/core': '>=1.9.0'
-      '@opentelemetry/exporter-trace-otlp-http': '>=0.35.0'
-      '@opentelemetry/sdk-trace-base': '>=1.9.0'
-      braintrust: '>=1.0.0-0'
+      '@langchain/core': '>=0.3.42'
+      braintrust: '>=0.4.0'
 
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
@@ -1634,12 +1631,9 @@ snapshots:
       semifies: 1.0.0
       source-map: 0.6.1
 
-  '@braintrust/otel@0.2.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(braintrust@3.15.0(zod@4.4.3))':
+  '@braintrust/langchain-js@0.2.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(@opentelemetry/exporter-trace-otlp-proto@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(openai@6.41.0(zod@4.4.3)))(braintrust@3.15.0(zod@4.4.3))':
     dependencies:
-      '@opentelemetry/api': 1.9.1
-      '@opentelemetry/core': 2.2.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/exporter-trace-otlp-http': 0.208.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/sdk-trace-base': 2.2.0(@opentelemetry/api@1.9.1)
+      '@langchain/core': 1.1.48(@opentelemetry/api@1.9.1)(@opentelemetry/exporter-trace-otlp-proto@0.208.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(openai@6.41.0(zod@4.4.3))
       braintrust: 3.15.0(zod@4.4.3)
 
   '@cfworker/json-schema@4.1.1': {}

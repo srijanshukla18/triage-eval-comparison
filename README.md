@@ -32,8 +32,10 @@ Defaults:
 
 ```bash
 export TRIAGE_MODEL=openai/gpt-oss-120b:free
-export JUDGE_MODEL=openai/gpt-oss-120b:free
+export JUDGE_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free
 ```
+
+The judge deliberately defaults to a different model family than the triage agent so the agent is never grading its own outputs (LLM judges rate their own family's outputs higher).
 
 ## Credentials
 
@@ -47,7 +49,7 @@ Braintrust:
 
 1. Create a Braintrust API key.
 2. Set `BRAINTRUST_API_KEY`.
-3. Run `pnpm eval:braintrust`. The Braintrust adapter runs V1 and V2 and gates CI so V2 must beat V1 on `faithfulness`.
+3. Run `pnpm eval:braintrust`. The Braintrust adapter runs V1 and V2 and gates CI on `faithfulness` non-regression: V2 must score at least V1 minus a 0.02 noise margin, because a strict V2 > V1 check on 25 rows flips on judge noise rather than prompt quality.
 
 LangSmith:
 
@@ -143,9 +145,9 @@ Onboarding verdict: LangSmith was best for this repo because it moved from setup
 
 ### Methodology Caveats
 
-- Braintrust observability is not measured yet. Its eval, experiment, scorer, and CI-gating surfaces worked; its logs, review, and monitor pages were empty because this repo did not successfully send Braintrust traces.
+- Braintrust observability is not measured yet. Its eval, experiment, scorer, and CI-gating surfaces worked; its logs, review, and monitor pages were empty because, at the time the rankings were captured, this repo did not send Braintrust traces. As of 2026-06-11 the adapter passes a `BraintrustCallbackHandler` into the agent, so experiment rows carry full span trees; the observability rankings still need a fresh UI pass before they can be filled in.
 - LangSmith's win is conditional on this repo using LangGraph. LangSmith has a native advantage for LangChain/LangGraph traces; a non-LangGraph agent loop could narrow that advantage.
-- The LangSmith project showed a 22% trace error rate during the hosted run. Before treating its monitoring results as fully healthy, those failed traces should be root-caused.
+- The LangSmith "22% trace error rate" was root-caused on 2026-06-11: every errored trace was an `OpenRouterError: Insufficient credits` from the 2026-06-02 23:44 UTC window, when the first paid-model Braintrust run drained the OpenRouter balance. The eval and evaluator projects have zero errors across their full history. The agent and graph were never at fault. Those errored traces also exposed cross-platform pollution: ambient `LANGSMITH_TRACING=true` was sending Braintrust eval traffic into LangSmith, so the Braintrust and Langfuse adapters now disable LangSmith tracing for their runs.
 - Cross-platform fairness depends on identical dataset identity, prompt-version metadata, and run labels across adapters. The current adapters are close enough for an exploratory comparison, but this should be tightened before treating the comparison as publication-grade.
 
 ### Braintrust
@@ -199,7 +201,7 @@ Weaknesses:
 - Strongly LangChain-shaped. This is good for this repo, but less neutral than Langfuse or Braintrust.
 - Powerful but concept-heavy: tracing projects, evaluator runs, dataset experiments, monitoring dashboards, prompts, deployments, sandboxes, and annotation queues all live in the same product.
 - Prompt management exists but was not populated in this workspace, so it was not deeply evaluated.
-- The home screen showed a 22% error rate on one trace project, which needs follow-up investigation before treating the hosted traces as fully healthy.
+- The home screen showed a 22% error rate on one trace project. This was later root-caused to the OpenRouter insufficient-credits outage during the first paid-model run, not an agent or platform problem (see Methodology Caveats).
 
 Observed screens:
 
@@ -241,10 +243,17 @@ Observed screens:
 
 ### Follow-Up Work
 
-- Wire Braintrust tracing/logging properly before judging Braintrust as an end-to-end observability product.
-- Root-cause the LangSmith project with 22% trace error rate.
+Addressed on 2026-06-11:
+
+- Braintrust tracing is wired through `@braintrust/langchain-js`, so agent spans now land under each experiment row. Re-observe the Braintrust UI before re-ranking its observability rows.
+- The LangSmith 22% trace error rate was root-caused to the 2026-06-02 insufficient-credits outage; eval projects show zero errors.
+- `toolCorrect` now scores the full expected tool sequence (including the model-decided `lookup_shipping` step) instead of only the first tool call. The dataset identity moved to `triage-comparison-v2` because the ticket schema changed.
+- The judge model is split from the triage model, and judge calls retry transient free-tier failures.
+
+Still open:
+
 - Use the same V1/V2 prompt naming across all three tools so UI comparison is less polluted by adapter-specific labels.
-- Update the adapters so every platform stores the same dataset identity and prompt-version metadata.
+- Re-run the hosted UI comparison with the fixes above and update the rankings, especially Braintrust's observability rows.
 
 ## Docs Used
 
